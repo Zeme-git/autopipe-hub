@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libharfbuzz-dev libfribidi-dev libfreetype6-dev \
         libjpeg-dev libcairo2-dev libtiff5-dev libicu-dev \
         build-essential gfortran procps \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean
 
 # ---- Conda: R 4.1, snakemake, bash, core R packages -------------------------
 RUN conda install -y -c conda-forge -c bioconda \
