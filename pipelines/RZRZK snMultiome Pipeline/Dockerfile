@@ -32,7 +32,7 @@ RUN conda install -y -c conda-forge -c bioconda \
         r-r6 r-withr r-cpp11 r-gtable \
         r-curl r-httr r-hmisc \
         macs2 \
-    && conda clean -afy
+    && conda clean --all --yes
 
 # Replace system bash with conda bash to prevent GLIBC mismatch
 RUN ln -sf /opt/conda/bin/bash /usr/bin/bash && \
