@@ -4,7 +4,8 @@
 FROM condaforge/miniforge3:latest
 
 # ---- System dependencies for R graphics & HDF5 ------------------------------
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
         libcurl4-openssl-dev libssl-dev libxml2-dev \
         libpng-dev libbz2-dev liblzma-dev libreadline-dev \
         libx11-dev libxt-dev zlib1g-dev libgl1-mesa-glx \
@@ -35,8 +36,10 @@ RUN conda install -y -c conda-forge -c bioconda \
     && conda clean --all --yes
 
 # Replace system bash with conda bash to prevent GLIBC mismatch
-RUN ln -sf /opt/conda/bin/bash /usr/bin/bash && \
-    ln -sf /opt/conda/bin/bash /bin/sh
+RUN ln -s /opt/conda/bin/bash /usr/bin/bash.conda \
+    && mv /usr/bin/bash.conda /usr/bin/bash \
+    && ln -s /opt/conda/bin/bash /bin/sh.conda \
+    && mv /bin/sh.conda /bin/sh
 
 # ---- CRAN packages (Seurat v4 + extras) -------------------------------------
 RUN Rscript -e " \
