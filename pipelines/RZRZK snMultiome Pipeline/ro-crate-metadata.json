@@ -1,0 +1,221 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": [
+        "Dataset",
+        "SoftwareSourceCode",
+        "ComputationalWorkflow"
+      ],
+      "creator": [
+        {
+          "@id": "#author"
+        }
+      ],
+      "dateCreated": "2026-03-17",
+      "description": "Reproduces the single-nucleus multiome (joint snRNA-seq + scATAC-seq) analysis from 'Epithelial WNT secretion drives niche escape of developing gastric cancer'. Processes 10x Genomics snMultiome data for Wild-type (RZ) and KRAS-mutant (RZK) mouse gastric samples through QC, MACS2 peak calling, SCTransform normalization, SCT-based integration, clustering, cell-type annotation, differential expression (MAST), differential accessibility, and JASPAR2020 motif enrichment. Generates Figures 3A-I and S3A-C.",
+      "input": [
+        {
+          "@id": "#input-h5"
+        },
+        {
+          "@id": "#input-fragments"
+        },
+        {
+          "@id": "#input-metrics"
+        }
+      ],
+      "isBasedOn": {
+        "@id": "https://github.com/BIS-lab/Gastric_cancer_WNT/tree/main/snMultiomics"
+      },
+      "keywords": [
+        "snMultiome",
+        "snRNA-seq",
+        "scATAC-seq",
+        "Seurat",
+        "Signac",
+        "MACS2",
+        "gastric cancer",
+        "KRAS",
+        "WNT7B",
+        "motif enrichment",
+        "chromVAR",
+        "10x Genomics",
+        "mouse",
+        "mm10",
+        "single-cell multiomics",
+        "differential expression",
+        "differential accessibility"
+      ],
+      "license": {
+        "@id": "https://spdx.org/licenses/MIT"
+      },
+      "name": "RZRZK snMultiome Pipeline",
+      "output": [
+        {
+          "@id": "#output-rds"
+        },
+        {
+          "@id": "#output-pdf"
+        },
+        {
+          "@id": "#output-csv"
+        },
+        {
+          "@id": "#output-stats"
+        }
+      ],
+      "programmingLanguage": {
+        "@id": "#snakemake"
+      },
+      "softwareRequirements": [
+        {
+          "@id": "#seurat"
+        },
+        {
+          "@id": "#signac"
+        },
+        {
+          "@id": "#macs2"
+        },
+        {
+          "@id": "#chromvar"
+        },
+        {
+          "@id": "#jaspar2020"
+        },
+        {
+          "@id": "#tfbstools"
+        },
+        {
+          "@id": "#mast"
+        },
+        {
+          "@id": "#dittoseq"
+        },
+        {
+          "@id": "#msigdbr"
+        },
+        {
+          "@id": "#gprofiler2"
+        }
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "@id": "#author",
+      "@type": "Person",
+      "name": "BIS-lab"
+    },
+    {
+      "@id": "#snakemake",
+      "@type": "ComputerLanguage",
+      "name": "Snakemake",
+      "url": "https://snakemake.readthedocs.io"
+    },
+    {
+      "@id": "#seurat",
+      "@type": "SoftwareApplication",
+      "name": "Seurat"
+    },
+    {
+      "@id": "#signac",
+      "@type": "SoftwareApplication",
+      "name": "Signac"
+    },
+    {
+      "@id": "#macs2",
+      "@type": "SoftwareApplication",
+      "name": "MACS2"
+    },
+    {
+      "@id": "#chromvar",
+      "@type": "SoftwareApplication",
+      "name": "chromVAR"
+    },
+    {
+      "@id": "#jaspar2020",
+      "@type": "SoftwareApplication",
+      "name": "JASPAR2020"
+    },
+    {
+      "@id": "#tfbstools",
+      "@type": "SoftwareApplication",
+      "name": "TFBSTools"
+    },
+    {
+      "@id": "#mast",
+      "@type": "SoftwareApplication",
+      "name": "MAST"
+    },
+    {
+      "@id": "#dittoseq",
+      "@type": "SoftwareApplication",
+      "name": "dittoSeq"
+    },
+    {
+      "@id": "#msigdbr",
+      "@type": "SoftwareApplication",
+      "name": "msigdbr"
+    },
+    {
+      "@id": "#gprofiler2",
+      "@type": "SoftwareApplication",
+      "name": "gprofiler2"
+    },
+    {
+      "@id": "#input-h5",
+      "@type": "FormalParameter",
+      "encodingFormat": "application/x-hdf5",
+      "name": "filtered_feature_bc_matrix.h5"
+    },
+    {
+      "@id": "#input-fragments",
+      "@type": "FormalParameter",
+      "encodingFormat": "application/gzip",
+      "name": "atac_fragments.tsv.gz"
+    },
+    {
+      "@id": "#input-metrics",
+      "@type": "FormalParameter",
+      "encodingFormat": "text/csv",
+      "name": "per_barcode_metrics.csv"
+    },
+    {
+      "@id": "#output-rds",
+      "@type": "FormalParameter",
+      "encodingFormat": "application/x-r-data",
+      "name": "Annotated Seurat RDS object"
+    },
+    {
+      "@id": "#output-pdf",
+      "@type": "FormalParameter",
+      "encodingFormat": "application/pdf",
+      "name": "Figure PDFs (UMAP, DotPlot, CoveragePlot, Motif enrichment)"
+    },
+    {
+      "@id": "#output-csv",
+      "@type": "FormalParameter",
+      "encodingFormat": "text/csv",
+      "name": "DEG and DA peak CSV tables"
+    },
+    {
+      "@id": "#output-stats",
+      "@type": "FormalParameter",
+      "encodingFormat": "text/csv",
+      "name": "Statistics summary CSV"
+    }
+  ],
+  "version": "1.0.0"
+}

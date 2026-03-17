@@ -1,0 +1,150 @@
+# =============================================================================
+#  RZ vs RZK snMultiome Pipeline — Snakefile
+# =============================================================================
+#  Reproduces the Seurat + Signac multiome analysis (snRNA-seq + scATAC-seq)
+#  from: "Epithelial WNT secretion drives niche escape of developing
+#         gastric cancer"
+#
+#  Steps:
+#    1. load_and_qc       — Load 10x h5, QC filter, compute ATAC metrics
+#    2. macs2_peaks        — Call peaks with MACS2, add macs2 assay
+#    3. normalize          — SCTransform + LogNorm (RNA); TF-IDF + SVD (ATAC)
+#    4. integrate_cluster  — SCT integration, PCA, UMAP, clustering, annotation
+#    5. visualization      — Figures 3A–E, 3H, S3A–B
+#    6. differential       — DEG (MAST), DA peaks (LR), KRAS hallmark overlap
+#    7. motif_enrichment   — JASPAR2020 motifs on DA peaks → Figures 3I, S3C
+# =============================================================================
+
+configfile: "config.yaml"
+
+rule all:
+    input:
+        # Step 4 final integrated object
+        config["output_dir"] + "/rds/RZ_RZK_annotated.rds",
+        # Step 5 figure PDFs
+        config["output_dir"] + "/figures/fig_3A_UMAP.pdf",
+        config["output_dir"] + "/figures/fig_3B_dotplot.pdf",
+        config["output_dir"] + "/figures/fig_3C_composition.pdf",
+        config["output_dir"] + "/figures/fig_3D_Wnt7b_feature.pdf",
+        config["output_dir"] + "/figures/fig_3E_Wnt7b_percent.pdf",
+        config["output_dir"] + "/figures/fig_3H_Wnt7b_coverage.pdf",
+        config["output_dir"] + "/figures/fig_S3B_Wnt_family_violin.pdf",
+        # Step 6 DE/DA tables
+        config["output_dir"] + "/tables/RZRZK_DEG_scMAST.csv",
+        config["output_dir"] + "/tables/DA_peaks_Wnt7_vs_Lgr5_mutant.csv",
+        config["output_dir"] + "/tables/DA_peaks_Wnt7_vs_Lgr5_wildtype.csv",
+        # Step 7 motif enrichment figures
+        config["output_dir"] + "/figures/fig_3I_motifs_RZK.pdf",
+        config["output_dir"] + "/figures/fig_S3C_motifs_RZ.pdf",
+        # Statistics
+        config["output_dir"] + "/tables/statistics_summary.csv"
+
+
+# ---- Step 1: Load 10x multiome data & QC filter -----------------------------
+rule load_and_qc:
+    input:
+        wt_h5   = config["samples"]["Wild_type"]["h5"],
+        mut_h5  = config["samples"]["Mutant"]["h5"],
+    output:
+        wt_rds  = config["output_dir"] + "/rds/wild_qc.rds",
+        mut_rds = config["output_dir"] + "/rds/mutant_qc.rds",
+    log:
+        config["output_dir"] + "/logs/load_and_qc.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/01_load_and_qc.R 2>&1 | tee {log}"
+
+
+# ---- Step 2: MACS2 peak calling ---------------------------------------------
+rule macs2_peaks:
+    input:
+        wt_rds  = rules.load_and_qc.output.wt_rds,
+        mut_rds = rules.load_and_qc.output.mut_rds,
+    output:
+        wt_rds  = config["output_dir"] + "/rds/wild_macs2.rds",
+        mut_rds = config["output_dir"] + "/rds/mutant_macs2.rds",
+    log:
+        config["output_dir"] + "/logs/macs2_peaks.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/02_macs2_peaks.R 2>&1 | tee {log}"
+
+
+# ---- Step 3: Normalization & dimensional reduction ---------------------------
+rule normalize:
+    input:
+        wt_rds  = rules.macs2_peaks.output.wt_rds,
+        mut_rds = rules.macs2_peaks.output.mut_rds,
+    output:
+        wt_rds  = config["output_dir"] + "/rds/wild_normalized.rds",
+        mut_rds = config["output_dir"] + "/rds/mutant_normalized.rds",
+    log:
+        config["output_dir"] + "/logs/normalize.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/03_normalize.R 2>&1 | tee {log}"
+
+
+# ---- Step 4: Integration, clustering, annotation ----------------------------
+rule integrate_cluster:
+    input:
+        wt_rds  = rules.normalize.output.wt_rds,
+        mut_rds = rules.normalize.output.mut_rds,
+    output:
+        rds = config["output_dir"] + "/rds/RZ_RZK_annotated.rds",
+    log:
+        config["output_dir"] + "/logs/integrate_cluster.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/04_integrate_cluster.R 2>&1 | tee {log}"
+
+
+# ---- Step 5: Visualization (Figures 3A–E, 3H, S3A–B) -----------------------
+rule visualization:
+    input:
+        rds = rules.integrate_cluster.output.rds,
+    output:
+        fig3a = config["output_dir"] + "/figures/fig_3A_UMAP.pdf",
+        fig3b = config["output_dir"] + "/figures/fig_3B_dotplot.pdf",
+        fig3c = config["output_dir"] + "/figures/fig_3C_composition.pdf",
+        fig3d = config["output_dir"] + "/figures/fig_3D_Wnt7b_feature.pdf",
+        fig3e = config["output_dir"] + "/figures/fig_3E_Wnt7b_percent.pdf",
+        fig3h = config["output_dir"] + "/figures/fig_3H_Wnt7b_coverage.pdf",
+        figs3b = config["output_dir"] + "/figures/fig_S3B_Wnt_family_violin.pdf",
+        stats  = config["output_dir"] + "/tables/statistics_summary.csv",
+    log:
+        config["output_dir"] + "/logs/visualization.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/05_visualization.R 2>&1 | tee {log}"
+
+
+# ---- Step 6: Differential expression & accessibility -------------------------
+rule differential:
+    input:
+        rds = rules.integrate_cluster.output.rds,
+    output:
+        deg_csv    = config["output_dir"] + "/tables/RZRZK_DEG_scMAST.csv",
+        da_mut_csv = config["output_dir"] + "/tables/DA_peaks_Wnt7_vs_Lgr5_mutant.csv",
+        da_wt_csv  = config["output_dir"] + "/tables/DA_peaks_Wnt7_vs_Lgr5_wildtype.csv",
+    log:
+        config["output_dir"] + "/logs/differential.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/06_differential.R 2>&1 | tee {log}"
+
+
+# ---- Step 7: Motif enrichment (Figures 3I, S3C) -----------------------------
+rule motif_enrichment:
+    input:
+        rds        = rules.integrate_cluster.output.rds,
+        da_mut_csv = rules.differential.output.da_mut_csv,
+        da_wt_csv  = rules.differential.output.da_wt_csv,
+    output:
+        fig3i  = config["output_dir"] + "/figures/fig_3I_motifs_RZK.pdf",
+        figs3c = config["output_dir"] + "/figures/fig_S3C_motifs_RZ.pdf",
+    log:
+        config["output_dir"] + "/logs/motif_enrichment.log"
+    threads: config["threads"]
+    shell:
+        "Rscript /pipeline/scripts/07_motif_enrichment.R 2>&1 | tee {log}"
