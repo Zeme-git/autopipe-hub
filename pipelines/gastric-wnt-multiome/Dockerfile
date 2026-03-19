@@ -1,72 +1,90 @@
 # =============================================================================
-#  Dockerfile — Gastric WNT snMultiome Pipeline
+#  Dockerfile — Gastric WNT snMultiome Pipeline (v10)
 # =============================================================================
 FROM condaforge/miniforge3:latest
 
-# System dependencies for R graphics and HDF5
+# System dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libcurl4-openssl-dev libssl-dev libxml2-dev \
         libpng-dev libbz2-dev liblzma-dev libreadline-dev \
-        libx11-dev libxt-dev zlib1g-dev libgl1-mesa-glx \
-        libhdf5-dev libv8-dev \
+        libx11-dev libxt-dev zlib1g-dev \
+        libgl1 libegl1 \
+        libhdf5-dev \
         libharfbuzz-dev libfribidi-dev libfreetype6-dev \
         libjpeg-dev libcairo2-dev libtiff5-dev libicu-dev \
-        build-essential gfortran procps \
+        build-essential gfortran procps pkg-config \
     && apt-get clean
 
-# Conda environment: R 4.1, snakemake, bash, core packages, MACS2
-RUN conda install -y -c conda-forge -c bioconda \
-        snakemake-minimal \
-        bash \
-        r-base=4.1 \
-        r-yaml r-rcpp r-rcpparmadillo r-rcppeigen \
-        r-dplyr r-tidyr r-purrr r-tibble r-rlang r-vctrs \
-        r-ggplot2 r-scales r-ggrepel r-gridextra \
-        r-ggforce r-ggraph r-tidygraph r-igraph r-graphlayouts \
-        r-colorspace r-viridis r-viridislite r-rcolorbrewer \
-        r-hdf5r r-matrix r-mgcv r-mass r-lattice r-nlme \
-        r-glue r-cli r-crayon r-digest r-fansi r-utf8 \
-        r-lifecycle r-pillar r-pkgconfig r-generics r-ellipsis \
-        r-systemfonts r-bit r-bit64 r-isoband \
-        r-labeling r-farver r-tweenr r-polyclip r-munsell \
-        r-r6 r-withr r-cpp11 r-gtable \
-        r-curl r-httr r-hmisc \
-        macs2 \
+# Stage 1: Create conda env with core R + bioconductor foundations
+RUN conda create -y -n pipeline -c conda-forge -c bioconda \
+        r-base=4.3 python=3.10 snakemake bash \
+        r-curl r-xml2 r-httr r-rcurl r-openssl r-png r-data.table r-xml r-httpuv \
+        r-igraph r-leiden r-hdf5r r-matrix r-systemfonts r-textshaping \
+        zlib \
+        bioconductor-rhtslib bioconductor-rsamtools bioconductor-genomicranges \
+        bioconductor-biostrings bioconductor-genomeinfodb bioconductor-rtracklayer \
+        bioconductor-genomicalignments bioconductor-bsgenome bioconductor-genomicfeatures \
+        bioconductor-annotationdbi bioconductor-summarizedexperiment \
+        bioconductor-singlecellexperiment bioconductor-xvector \
+        bioconductor-cner bioconductor-tfbstools \
     && conda clean --all --yes
 
-# Ensure conda bash is used as default shell
-RUN cp /opt/conda/bin/bash /usr/bin/bash \
-    && cp /opt/conda/bin/bash /bin/sh
+# Stage 2: Install remaining R packages into the existing env
+RUN conda install -y -n pipeline -c conda-forge -c bioconda \
+        r-seurat r-seuratobject r-signac \
+        r-ggforce r-tidygraph r-graphlayouts r-ggraph r-clustree \
+        r-future r-future.apply \
+        r-dplyr r-tidyr r-purrr r-tibble r-ggplot2 \
+        r-scales r-ggrepel r-gridextra r-cowplot \
+        r-rcolorbrewer r-viridis r-colorspace r-paletteer \
+        r-yaml r-hash r-readxl r-ggnewscale r-dendextend \
+        r-rcpp r-rcpparmadillo r-rcppeigen \
+        r-shiny r-plotly r-dt r-miniui \
+    && conda clean --all --yes
 
-# CRAN packages: Seurat v4 and utilities
-RUN Rscript -e " \
-    options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/2023-01-01')); \
-    install.packages(c('Seurat', 'clustree', 'hash', 'paletteer', \
-                        'readxl', 'ggnewscale', 'cowplot', 'dendextend'))"
+ENV PATH="/opt/conda/envs/pipeline/bin:$PATH"
+ENV CFLAGS="-I/opt/conda/envs/pipeline/include"
+ENV LDFLAGS="-L/opt/conda/envs/pipeline/lib -Wl,-rpath,/opt/conda/envs/pipeline/lib"
+ENV CPPFLAGS="-I/opt/conda/envs/pipeline/include"
+ENV PKG_CONFIG_PATH="/opt/conda/envs/pipeline/lib/pkgconfig"
+SHELL ["conda", "run", "--no-capture-output", "-n", "pipeline", "/bin/bash", "-c"]
 
-# Bioconductor packages
+# MACS2
+RUN pip install macs2
+
+# Bioconductor high-level packages only
 RUN Rscript -e " \
-    if (!requireNamespace('BiocManager', quietly = TRUE)) \
-        install.packages('BiocManager'); \
-    BiocManager::install(version = '3.14', ask = FALSE); \
+    cat('Installing Bioconductor packages v10...\n'); \
+    options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/2024-01-01')); \
+    install.packages('BiocManager'); \
     BiocManager::install(c( \
-        'Signac', \
         'biovizBase', \
         'EnsDb.Mmusculus.v79', \
         'BSgenome.Mmusculus.UCSC.mm10', \
         'dittoSeq', \
         'motifmatchr', \
         'JASPAR2020', \
-        'TFBSTools', \
         'chromVAR', \
         'msigdbr', \
         'gprofiler2', \
         'MAST' \
-    ), ask = FALSE)"
+    ), ask = FALSE, update = FALSE); \
+    if (!require('Seurat', quietly=TRUE)) stop('Seurat FAILED'); \
+    if (!require('Signac', quietly=TRUE)) stop('Signac FAILED'); \
+    if (!require('MAST', quietly=TRUE)) stop('MAST FAILED'); \
+    cat('All packages OK\n')"
 
 # Copy pipeline files
-COPY Snakefile config.yaml /pipeline/
-COPY scripts/ /pipeline/scripts/
+RUN mkdir -p /pipeline/scripts
+COPY Snakefile /pipeline/Snakefile
+COPY config.yaml /pipeline/config.yaml
+COPY 01_load_and_qc.R /pipeline/scripts/01_load_and_qc.R
+COPY 02_macs2_peaks.R /pipeline/scripts/02_macs2_peaks.R
+COPY 03_normalize.R /pipeline/scripts/03_normalize.R
+COPY 04_integrate_cluster.R /pipeline/scripts/04_integrate_cluster.R
+COPY 05_visualization.R /pipeline/scripts/05_visualization.R
+COPY 06_differential.R /pipeline/scripts/06_differential.R
+COPY 07_motif_enrichment.R /pipeline/scripts/07_motif_enrichment.R
 
 WORKDIR /pipeline

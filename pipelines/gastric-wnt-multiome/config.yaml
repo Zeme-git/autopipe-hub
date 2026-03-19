@@ -1,12 +1,5 @@
-# =============================================================================
-#  Gastric WNT snMultiome Pipeline — Configuration
-# =============================================================================
-# This config drives a Snakemake pipeline that reproduces the multiome
-# (snRNA-seq + scATAC-seq) analysis from:
-#   "Epithelial WNT secretion drives niche escape of developing gastric cancer"
-# =============================================================================
+# Gastric WNT snMultiome Pipeline — Configuration
 
-# --- Sample information -------------------------------------------------------
 samples:
   Wild_type:
     h5:        "/input/Mouse_RZ_WEN/filtered_feature_bc_matrix.h5"
@@ -19,11 +12,9 @@ samples:
     metadata:  "/input/Mouse_RZK_WEN/per_barcode_metrics.csv"
     genotype:  "Mutant"
 
-# --- Species & genome ---------------------------------------------------------
 species: "mouse"
-macs2_path: "/opt/conda/bin/macs2"
+macs2_path: "/opt/conda/envs/pipeline/bin/macs2"
 
-# --- QC thresholds ------------------------------------------------------------
 qc:
   nCount_ATAC_min: 1000
   nCount_ATAC_max: 100000
@@ -33,24 +24,20 @@ qc:
   TSS_enrichment_min:    1
   percent_mt_max:        15
 
-# --- RNA processing -----------------------------------------------------------
 rna:
   nfeatures: 2000
 
-# --- Integration & clustering -------------------------------------------------
 integration:
   npcs: 30
   cluster_resolution_coarse: 0.3
   cluster_resolution_fine:   0.6
   algorithm: 1
 
-# --- Differential expression --------------------------------------------------
 de:
   test_use: "MAST"
   padj_threshold: 0.01
   log2fc_threshold: 1
 
-# --- Differential accessibility ------------------------------------------------
 da:
   min_pct: 0.05
   logfc_threshold: 0.1
@@ -58,12 +45,10 @@ da:
   latent_vars: "atac_peak_region_fragments"
   padj_threshold_motif: 0.005
 
-# --- Wnt7b regulatory regions for ATAC count tests ----------------------------
 wnt7b_regions:
   - "chr15-85568400-85569900"
   - "chr15-85574150-85575200"
 
-# --- Cell-type annotation (cluster number to name) ----------------------------
 cluster_names:
   "0": "Neck"
   "1": "Lgr5+"
@@ -73,7 +58,6 @@ cluster_names:
   "5": "Pre-Pit"
   "6": "Pit"
 
-# --- Marker genes for dot plot (Fig 3B) --------------------------------------
 marker_genes:
   - "Lgr5"
   - "Glipr1"
@@ -91,7 +75,6 @@ marker_genes:
   - "Muc5ac"
   - "Wnt7b"
 
-# --- Feature plot gene list (Fig S3A) ----------------------------------------
 featureplot_genes:
   - { gene: "Muc5ac", min: 0,   max: 3   }
   - { gene: "Gkn2",   min: 0,   max: 3   }
@@ -108,7 +91,6 @@ featureplot_genes:
   - { gene: "Glipr1", min: 1.5, max: 4.5 }
   - { gene: "Lgr5",   min: 0.5, max: 3.5 }
 
-# --- Wnt family genes for violin plot (Fig S3B) ------------------------------
 wnt_family_genes:
   - "Wnt1"
   - "Wnt2"
@@ -130,9 +112,6 @@ wnt_family_genes:
   - "Wnt11"
   - "Wnt16"
 
-# --- Parallelization ---------------------------------------------------------
 threads: 20
 max_memory_gb: 80
-
-# --- Output directory ---------------------------------------------------------
 output_dir: "/output"
