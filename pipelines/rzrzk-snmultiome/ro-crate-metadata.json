@@ -23,8 +23,8 @@
           "@id": "#author"
         }
       ],
-      "dateCreated": "2026-03-20",
-      "description": "Reproduces the snMultiome (joint snRNA-seq + scATAC-seq) analysis from 'Epithelial WNT secretion drives niche escape of developing gastric cancer'. Processes 10x Genomics multiome data from wild-type (RZ) and KRAS-mutant (RZK) mouse gastric tissue through QC, MACS2 peak calling, SCTransform integration, clustering, differential expression (MAST), differential accessibility, and JASPAR2020 motif enrichment. Generates Figures 3A-3I and S3A-S3C.",
+      "dateCreated": "2026-03-21",
+      "description": "Reproduces the snMultiome (joint snRNA-seq + scATAC-seq) analysis from 'Epithelial WNT secretion drives niche escape of developing gastric cancer'. Processes 10x Genomics multiome data from wild-type (RZ) and KRAS-mutant (RZK) mouse gastric tissue through QC, MACS2 peak calling, SCTransform integration, clustering, differential expression (MAST), differential accessibility, and JASPAR2020 motif enrichment.",
       "input": [
         {
           "@id": "#input-h5"
@@ -36,9 +36,6 @@
           "@id": "#input-metrics"
         }
       ],
-      "isBasedOn": {
-        "@id": ""
-      },
       "keywords": [
         "snMultiome",
         "scRNA-seq",
@@ -53,12 +50,7 @@
         "KRAS",
         "WNT",
         "mouse",
-        "mm10",
-        "differential-expression",
-        "differential-accessibility",
-        "integration",
-        "clustering",
-        "UMAP"
+        "mm10"
       ],
       "license": {
         "@id": "https://spdx.org/licenses/MIT"
@@ -95,16 +87,10 @@
           "@id": "#chromvar"
         },
         {
-          "@id": "#jaspar2020"
-        },
-        {
-          "@id": "#dittoSeq"
-        },
-        {
           "@id": "#mast"
         }
       ],
-      "version": "1.0.0"
+      "version": "2.0.0"
     },
     {
       "@id": "#author",
@@ -138,16 +124,6 @@
       "name": "chromVAR"
     },
     {
-      "@id": "#jaspar2020",
-      "@type": "SoftwareApplication",
-      "name": "JASPAR2020"
-    },
-    {
-      "@id": "#dittoSeq",
-      "@type": "SoftwareApplication",
-      "name": "dittoSeq"
-    },
-    {
       "@id": "#mast",
       "@type": "SoftwareApplication",
       "name": "MAST"
@@ -174,7 +150,7 @@
       "@id": "#output-rds",
       "@type": "FormalParameter",
       "encodingFormat": "application/x-rds",
-      "name": "clustered_object.rds"
+      "name": "RZ_RZK_annotated.rds"
     },
     {
       "@id": "#output-csv",
@@ -189,5 +165,5 @@
       "name": "Figures (PDF)"
     }
   ],
-  "version": "1.0.0"
+  "version": "2.0.0"
 }
