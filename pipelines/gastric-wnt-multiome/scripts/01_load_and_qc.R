@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
-# =============================================================================
-#  Step 1: Load 10x Multiome Data & Quality Control
-# =============================================================================
+# Step 1: Load 10x Multiome Data & Quality Control
+
+# Force Seurat v4 compatibility mode
+options(Seurat.object.assay.version = "v3")
 
 library(future)
 library(Seurat)
@@ -64,6 +65,7 @@ cat(sprintf("  Mutant cells after QC:    %d\n", ncol(mutant)))
 
 out_dir <- cfg$output_dir
 dir.create(file.path(out_dir, "rds"), showWarnings = FALSE, recursive = TRUE)
+dir.create(file.path(out_dir, "logs"), showWarnings = FALSE, recursive = TRUE)
 saveRDS(wild,   file.path(out_dir, "rds", "wild_qc.rds"))
 saveRDS(mutant, file.path(out_dir, "rds", "mutant_qc.rds"))
 cat("Step 1 complete.\n")

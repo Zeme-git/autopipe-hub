@@ -59,58 +59,42 @@ cluster_names:
   "6": "Pit"
 
 marker_genes:
-  - "Lgr5"
-  - "Glipr1"
-  - "Cd44"
-  - "Cftr"
-  - "Muc6"
-  - "Mki67"
-  - "Foxm1"
-  - "Hmgb2"
-  - "Top2a"
-  - "Smc2"
-  - "Gkn1"
-  - "Tff1"
-  - "Gkn2"
-  - "Muc5ac"
-  - "Wnt7b"
-
-featureplot_genes:
-  - { gene: "Muc5ac", min: 0,   max: 3   }
-  - { gene: "Gkn2",   min: 0,   max: 3   }
-  - { gene: "Tff1",   min: 0.5, max: 6   }
-  - { gene: "Gkn1",   min: 0.5, max: 5   }
-  - { gene: "Smc2",   min: 0.5, max: 3   }
-  - { gene: "Top2a",  min: 0.5, max: 4   }
-  - { gene: "Hmgb2",  min: 1,   max: 4   }
-  - { gene: "Foxm1",  min: 0,   max: 2   }
-  - { gene: "Mki67",  min: 0.3, max: 3   }
-  - { gene: "Muc6",   min: 0.3, max: 4.5 }
-  - { gene: "Cftr",   min: 0.5, max: 3.5 }
-  - { gene: "Cd44",   min: 2,   max: 4.2 }
-  - { gene: "Glipr1", min: 1.5, max: 4.5 }
-  - { gene: "Lgr5",   min: 0.5, max: 3.5 }
+  - Lgr5
+  - Glipr1
+  - Cd44
+  - Cftr
+  - Muc6
+  - Mki67
+  - Foxm1
+  - Hmgb2
+  - Top2a
+  - Smc2
+  - Gkn1
+  - Tff1
+  - Gkn2
+  - Muc5ac
+  - Wnt7b
 
 wnt_family_genes:
-  - "Wnt1"
-  - "Wnt2"
-  - "Wnt2b"
-  - "Wnt3"
-  - "Wnt3a"
-  - "Wnt4"
-  - "Wnt5a"
-  - "Wnt5b"
-  - "Wnt6"
-  - "Wnt7a"
-  - "Wnt7b"
-  - "Wnt8a"
-  - "Wnt8b"
-  - "Wnt9a"
-  - "Wnt9b"
-  - "Wnt10a"
-  - "Wnt10b"
-  - "Wnt11"
-  - "Wnt16"
+  - Wnt1
+  - Wnt2
+  - Wnt2b
+  - Wnt3
+  - Wnt3a
+  - Wnt4
+  - Wnt5a
+  - Wnt5b
+  - Wnt6
+  - Wnt7a
+  - Wnt7b
+  - Wnt8a
+  - Wnt8b
+  - Wnt9a
+  - Wnt9b
+  - Wnt10a
+  - Wnt10b
+  - Wnt11
+  - Wnt16
 
 threads: 20
 max_memory_gb: 80

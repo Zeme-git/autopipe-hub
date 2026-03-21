@@ -23,8 +23,8 @@
           "@id": "#author"
         }
       ],
-      "dateCreated": "2026-03-19",
-      "description": "Reproduces the single-nucleus multiome (joint snRNA-seq + scATAC-seq) analysis from 'Epithelial WNT secretion drives niche escape of developing gastric cancer'. Processes 10x Genomics snMultiome data for Wild-type (RZ) and KRAS-mutant (RZK) mouse gastric samples through QC, MACS2 peak calling, SCTransform normalization, SCT-based integration, clustering, cell-type annotation, differential expression (MAST), differential accessibility, and JASPAR2020 motif enrichment. Uses Seurat v5 with v4 compatibility mode. Validated with real data end-to-end.",
+      "dateCreated": "2026-03-21",
+      "description": "Reproduces the single-nucleus multiome (joint snRNA-seq + scATAC-seq) analysis from 'Epithelial WNT secretion drives niche escape of developing gastric cancer'. Processes 10x Genomics snMultiome data for Wild-type (RZ) and KRAS-mutant (RZK) mouse gastric samples through QC, MACS2 peak calling, SCTransform normalization, SCT-based integration, clustering, cell-type annotation, differential expression (MAST), differential accessibility, and JASPAR2020 motif enrichment. Uses Seurat v5 with v4 compatibility mode for stable reproducibility. Validated with real data producing all figures (3A-3I, S3B-S3C).",
       "input": [
         {
           "@id": "#input-h5"
@@ -111,7 +111,7 @@
           "@id": "#gprofiler2"
         }
       ],
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "@id": "#author",
@@ -217,5 +217,5 @@
       "name": "Statistics summary CSV"
     }
   ],
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

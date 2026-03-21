@@ -55,7 +55,7 @@ RUN pip install macs2
 
 # Bioconductor high-level packages only
 RUN Rscript -e " \
-    cat('Installing Bioconductor packages v10...\n'); \
+    cat('Installing Bioconductor packages...\n'); \
     options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/2024-01-01')); \
     install.packages('BiocManager'); \
     BiocManager::install(c( \
@@ -79,12 +79,12 @@ RUN Rscript -e " \
 RUN mkdir -p /pipeline/scripts
 COPY Snakefile /pipeline/Snakefile
 COPY config.yaml /pipeline/config.yaml
-COPY 01_load_and_qc.R /pipeline/scripts/01_load_and_qc.R
-COPY 02_macs2_peaks.R /pipeline/scripts/02_macs2_peaks.R
-COPY 03_normalize.R /pipeline/scripts/03_normalize.R
-COPY 04_integrate_cluster.R /pipeline/scripts/04_integrate_cluster.R
-COPY 05_visualization.R /pipeline/scripts/05_visualization.R
-COPY 06_differential.R /pipeline/scripts/06_differential.R
-COPY 07_motif_enrichment.R /pipeline/scripts/07_motif_enrichment.R
+COPY scripts/01_load_and_qc.R /pipeline/scripts/01_load_and_qc.R
+COPY scripts/02_macs2_peaks.R /pipeline/scripts/02_macs2_peaks.R
+COPY scripts/03_normalize.R /pipeline/scripts/03_normalize.R
+COPY scripts/04_integrate_cluster.R /pipeline/scripts/04_integrate_cluster.R
+COPY scripts/05_visualization.R /pipeline/scripts/05_visualization.R
+COPY scripts/06_differential.R /pipeline/scripts/06_differential.R
+COPY scripts/07_motif_enrichment.R /pipeline/scripts/07_motif_enrichment.R
 
 WORKDIR /pipeline
