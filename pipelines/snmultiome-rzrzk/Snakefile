@@ -1,0 +1,163 @@
+# =============================================================================
+#  Snakefile — 10X snMultiome (RZ vs RZK) Analysis Pipeline
+#  7-step workflow: QC → MACS2 → Normalize → Integrate/Cluster → Visualize
+#                  → DEG → Motif Enrichment
+# =============================================================================
+configfile: "config.yaml"
+
+rule all:
+    input:
+        "/output/06_differential/DEG_scMAST.csv",
+        "/output/06_differential/DEG_KRAS_overlap.csv",
+        "/output/07_motif/motif_enrichment_mutant.csv",
+        "/output/07_motif/motif_enrichment_wildtype.csv",
+        "/output/07_motif/fig_3I_motif_barplot_mutant.pdf",
+        "/output/07_motif/fig_3I_motif_barplot_wildtype.pdf",
+        "/output/05_visualization/fig_3A_UMAP.pdf",
+        "/output/05_visualization/fig_3B_dotplot.pdf",
+        "/output/05_visualization/fig_3C_dittobarplot.pdf",
+        "/output/05_visualization/fig_3D_Wnt7b_feature.pdf",
+        "/output/05_visualization/fig_S3A_feature_plots.pdf",
+        "/output/05_visualization/fig_S3B_wnt_vlnplot.pdf"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 1: Load 10X data, compute QC metrics, filter cells
+# ──────────────────────────────────────────────────────────────────────────────
+rule load_and_qc:
+    output:
+        wild  = "/output/01_qc/wild_qc.rds",
+        mutant = "/output/01_qc/mutant_qc.rds",
+        qc_wild_plot = "/output/01_qc/qc_vlnplot_wild.pdf",
+        qc_mutant_plot = "/output/01_qc/qc_vlnplot_mutant.pdf"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/01_load_and_qc.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/01_load_and_qc.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 2: MACS2 peak calling on each sample
+# ──────────────────────────────────────────────────────────────────────────────
+rule macs2_peaks:
+    input:
+        wild  = "/output/01_qc/wild_qc.rds",
+        mutant = "/output/01_qc/mutant_qc.rds"
+    output:
+        wild  = "/output/02_peaks/wild_peaks.rds",
+        mutant = "/output/02_peaks/mutant_peaks.rds"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/02_macs2_peaks.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/02_macs2_peaks.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 3: SCTransform + LogNormalize (RNA) and TF-IDF + SVD (ATAC)
+# ──────────────────────────────────────────────────────────────────────────────
+rule normalize:
+    input:
+        wild  = "/output/02_peaks/wild_peaks.rds",
+        mutant = "/output/02_peaks/mutant_peaks.rds"
+    output:
+        wild  = "/output/03_norm/wild_norm.rds",
+        mutant = "/output/03_norm/mutant_norm.rds"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/03_normalize.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/03_normalize.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 4: SCT Integration → PCA → UMAP → Clustering
+# ──────────────────────────────────────────────────────────────────────────────
+rule integrate_cluster:
+    input:
+        wild  = "/output/03_norm/wild_norm.rds",
+        mutant = "/output/03_norm/mutant_norm.rds"
+    output:
+        combined = "/output/04_cluster/combined_clustered.rds"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/04_integrate_cluster.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/04_integrate_cluster.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 5: Visualization — UMAPs, DotPlots, DittoBar, FeaturePlots
+# ──────────────────────────────────────────────────────────────────────────────
+rule visualization:
+    input:
+        combined = "/output/04_cluster/combined_clustered.rds"
+    output:
+        fig3a = "/output/05_visualization/fig_3A_UMAP.pdf",
+        fig3b = "/output/05_visualization/fig_3B_dotplot.pdf",
+        fig3c = "/output/05_visualization/fig_3C_dittobarplot.pdf",
+        fig3d = "/output/05_visualization/fig_3D_Wnt7b_feature.pdf",
+        figs3a = "/output/05_visualization/fig_S3A_feature_plots.pdf",
+        figs3b = "/output/05_visualization/fig_S3B_wnt_vlnplot.pdf",
+        refined = "/output/05_visualization/combined_refined.rds"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/05_visualization.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/05_visualization.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 6: Differential Gene Expression (MAST) & KRAS overlap
+# ──────────────────────────────────────────────────────────────────────────────
+rule differential:
+    input:
+        combined = "/output/04_cluster/combined_clustered.rds"
+    output:
+        deg = "/output/06_differential/DEG_scMAST.csv",
+        kras = "/output/06_differential/DEG_KRAS_overlap.csv"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/06_differential.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/06_differential.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 7: DA peaks, Motif enrichment, Coverage plots (Wnt7b locus)
+# ──────────────────────────────────────────────────────────────────────────────
+rule motif_enrichment:
+    input:
+        refined = "/output/05_visualization/combined_refined.rds"
+    output:
+        motif_m = "/output/07_motif/motif_enrichment_mutant.csv",
+        motif_w = "/output/07_motif/motif_enrichment_wildtype.csv",
+        plot_m  = "/output/07_motif/fig_3I_motif_barplot_mutant.pdf",
+        plot_w  = "/output/07_motif/fig_3I_motif_barplot_wildtype.pdf"
+    threads: config.get("threads", 8)
+    log:
+        "/output/logs/07_motif_enrichment.log"
+    shell:
+        """
+        conda run --no-capture-output -n pipeline \
+          Rscript /pipeline/scripts/07_motif_enrichment.R \
+            /pipeline/config.yaml 2>&1 | tee {log}
+        """

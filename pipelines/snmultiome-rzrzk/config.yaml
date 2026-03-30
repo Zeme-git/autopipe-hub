@@ -1,0 +1,177 @@
+# =============================================================================
+#  config.yaml — 10X snMultiome (RZ vs RZK) Analysis Pipeline
+#  Paper: Epithelial WNT secretion drives niche escape of developing gastric cancer
+# =============================================================================
+
+# --- Species ---
+species: "mouse"
+
+# --- Sample definitions ---
+samples:
+  wild:
+    h5_file:       "/input/Mouse_RZ_WEN/filtered_feature_bc_matrix.h5"
+    fragment_file:  "/input/Mouse_RZ_WEN/atac_fragments.tsv.gz"
+    meta_file:      "/input/Mouse_RZ_WEN/per_barcode_metrics.csv"
+    genotype:       "Wild_type"
+  mutant:
+    h5_file:       "/input/Mouse_RZK_WEN/filtered_feature_bc_matrix.h5"
+    fragment_file:  "/input/Mouse_RZK_WEN/atac_fragments.tsv.gz"
+    meta_file:      "/input/Mouse_RZK_WEN/per_barcode_metrics.csv"
+    genotype:       "Mutant"
+
+# --- QC thresholds ---
+qc:
+  nCount_ATAC_max: 100000
+  nCount_RNA_max:  25000
+  nCount_ATAC_min: 1000
+  nCount_RNA_min:  1000
+  nucleosome_signal_max: 2
+  TSS_enrichment_min: 1
+  percent_mt_max: 15
+
+# --- MACS2 ---
+macs2_path: "/opt/conda/envs/pipeline/bin/macs2"
+
+# --- Processing parameters ---
+processing:
+  sct_variable_features: 2000
+  vst_nfeatures: 2000
+  top_features_min_cutoff: "q0"
+
+# --- Integration & clustering ---
+clustering:
+  npcs: 30
+  dims: 30          # 1:dims for UMAP, neighbors, etc.
+  resolution_initial: 0.3
+  resolution_refined: 0.6
+  algorithm: 1
+
+# --- Cluster identity mapping ---
+cluster_labels:
+  "0": "Neck"
+  "1": "Lgr5+"
+  "2": "SPEM"
+  "3": "Wnt7+"
+  "4": "Proliferating"
+  "5": "Pre-Pit"
+
+# --- Cluster colors ---
+cluster_colors:
+  "0": "#8936EF"
+  "1": "#F2CA19"
+  "2": "#FF00BD"
+  "3": "#E11845"
+  "4": "#0057E9"
+  "5": "#87E911"
+  "6": "#018300"
+
+# --- Marker genes for DotPlot (Fig 3B) ---
+marker_genes:
+  - "Lgr5"
+  - "Glipr1"
+  - "Cd44"
+  - "Cftr"
+  - "Muc6"
+  - "Mki67"
+  - "Foxm1"
+  - "Hmgb2"
+  - "Top2a"
+  - "Smc2"
+  - "Gkn1"
+  - "Tff1"
+  - "Gkn2"
+  - "Muc5ac"
+  - "Wnt7b"
+
+# --- Feature plot genes (Fig S3A) ---
+feature_plot_genes:
+  - gene: "Muc5ac"
+    min: 0
+    max: 3
+  - gene: "Gkn2"
+    min: 0
+    max: 3
+  - gene: "Tff1"
+    min: 0.5
+    max: 6
+  - gene: "Gkn1"
+    min: 0.5
+    max: 5
+  - gene: "Smc2"
+    min: 0.5
+    max: 3
+  - gene: "Top2a"
+    min: 0.5
+    max: 4
+  - gene: "Hmgb2"
+    min: 1
+    max: 4
+  - gene: "Foxm1"
+    min: 0
+    max: 2
+  - gene: "Mki67"
+    min: 0.3
+    max: 3
+  - gene: "Muc6"
+    min: 0.3
+    max: 4.5
+  - gene: "Cftr"
+    min: 0.5
+    max: 3.5
+  - gene: "Cd44"
+    min: 2
+    max: 4.2
+  - gene: "Glipr1"
+    min: 1.5
+    max: 4.5
+  - gene: "Lgr5"
+    min: 0.5
+    max: 3.5
+
+# --- Wnt family genes for VlnPlot (Fig S3B) ---
+wnt_family_genes:
+  - "Wnt1"
+  - "Wnt2"
+  - "Wnt2b"
+  - "Wnt3"
+  - "Wnt3a"
+  - "Wnt4"
+  - "Wnt5a"
+  - "Wnt5b"
+  - "Wnt6"
+  - "Wnt7a"
+  - "Wnt7b"
+  - "Wnt8a"
+  - "Wnt8b"
+  - "Wnt9a"
+  - "Wnt9b"
+  - "Wnt10a"
+  - "Wnt10b"
+  - "Wnt11"
+  - "Wnt16"
+
+# --- Differential accessibility ---
+da_params:
+  min_pct: 0.05
+  logfc_threshold: 0.1
+  test_use: "LR"
+  latent_vars: "atac_peak_region_fragments"
+  p_adj_threshold: 0.05
+  motif_p_adj_threshold: 0.005
+
+# --- DEG analysis ---
+deg:
+  test_use: "MAST"
+  p_val_adj_threshold: 0.01
+  avg_log2FC_threshold: 1
+
+# --- Wnt7b locus regions for enrichment testing ---
+wnt7b_regions:
+  - "chr15-85568400-85569900"
+  - "chr15-85574150-85575200"
+
+# --- Parallelism ---
+n_workers: 20
+future_max_size_gb: 80
+seed: 1234
+threads: 8

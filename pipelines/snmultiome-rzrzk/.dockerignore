@@ -1,0 +1,3 @@
+.snakemake
+build_*.log
+stop_runs.sh
