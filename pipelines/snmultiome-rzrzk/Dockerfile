@@ -92,12 +92,9 @@ COPY scripts/05_visualization.R /pipeline/scripts/05_visualization.R
 COPY scripts/06_differential.R /pipeline/scripts/06_differential.R
 COPY scripts/07_motif_enrichment.R /pipeline/scripts/07_motif_enrichment.R
 
-# Entrypoint to auto-unlock stale Snakemake locks
+# Entrypoint to clear stale Snakemake locks from bind-mounted pipeline dir
 COPY entrypoint.sh /pipeline/entrypoint.sh
 RUN chmod +x /pipeline/entrypoint.sh
-
-# Ensure no stale Snakemake locks in image
-RUN rm -rf /pipeline/.snakemake
 
 WORKDIR /pipeline
 ENTRYPOINT ["/pipeline/entrypoint.sh"]

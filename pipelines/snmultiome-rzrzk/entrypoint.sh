@@ -1,5 +1,7 @@
 #!/bin/bash
-# Entrypoint: remove stale Snakemake locks before running
-# The pipeline source dir is bind-mounted, so locks from killed runs persist
-rm -rf /pipeline/.snakemake/locks 2>/dev/null || true
+# Entrypoint: clear stale Snakemake lock files from bind-mounted pipeline dir
+# Only removes the specific lock files, not the entire .snakemake directory
+if [ -d /pipeline/.snakemake/locks ]; then
+  find /pipeline/.snakemake/locks -type f -delete 2>/dev/null || true
+fi
 exec "$@"
