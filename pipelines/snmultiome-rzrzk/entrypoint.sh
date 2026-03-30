@@ -1,7 +1,6 @@
 #!/bin/bash
-# Entrypoint: clear stale Snakemake lock files from bind-mounted pipeline dir
-# Only removes the specific lock files, not the entire .snakemake directory
-if [ -d /pipeline/.snakemake/locks ]; then
-  find /pipeline/.snakemake/locks -type f -delete 2>/dev/null || true
-fi
+# Entrypoint: unlock stale Snakemake locks from bind-mounted pipeline dir
+# Uses snakemake's built-in unlock mechanism (safe, no destructive commands)
+cd /pipeline
+conda run --no-capture-output -n pipeline snakemake --unlock 2>/dev/null || true
 exec "$@"
